@@ -1,0 +1,17 @@
+{
+  "name": "vz-compat",
+  "version": "1.0.0",
+  "description": "Adds support for Vizality plugins to Rikka",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "discord",
+    "vizality",
+    "rikka"
+  ],
+  "author": "V3L0C1T13S",
+  "license": "GPL-3.0",
+  "dependencies": {}
+}
