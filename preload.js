@@ -88,17 +88,4 @@ window.vizality = new Vizality();
 exposeGlobal('vizality', true);
 exposeGlobal('$vz', true);
 
-/**
- * Discord's preload.
- */
-const preload = ipcRenderer.sendSync('VIZALITY_GET_PRELOAD');
-if (preload) {
-  /**
-   * Restore original preload for future windows.
-   */
-  process._linkedBinding('electron_common_command_line').appendSwitch('preload', preload);
-  // i hate this so much, but if it's not here, it'll crash
-  require(preload);
-}
-
 /* @todo Add debug logging. */

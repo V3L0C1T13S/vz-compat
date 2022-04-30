@@ -1,21 +1,15 @@
 import { Logger } from "@rikka/API/Utils";
+import { clearCache, DevToolsClose, DevToolsOpen } from "@rikka/modules/util";
 import { BrowserWindow, ipcMain } from "electron";
 import { existsSync } from "fs";
 import { readFile } from "fs/promises";
 import { dirname, join, posix, relative, resolve, sep } from "path";
-import sass, { renderSync } from "sass";
+import { renderSync } from "sass";
 import { vizalityPath } from "./constants/vz";
 import { vzStore } from "./vzStore";
 
 function getHistory(evt: Electron.IpcMainInvokeEvent) {
   return (evt as any).sender.history;
-}
-
-function clearCache(evt: Electron.IpcMainInvokeEvent) {
-  return new Promise(resolve => {
-    //@ts-ignore
-    evt.sender.session.clearCache(() => resolve(null));
-  });
 }
 
 function getPreload() {
@@ -60,10 +54,6 @@ function compileSass(_: any, file: string) {
   });
 }
 
-function compileSassv2(_: any, file: string) {
-  return sass.compile(file).css;
-}
-
 export function addIPCHandles() {
   if(!ipcMain) {
     Logger.warn("IPC Main not available, skipping IPC handles");
@@ -75,4 +65,6 @@ export function addIPCHandles() {
   ipcMain.handle("VIZALITY_GET_HISTORY", getHistory);
   ipcMain.handle("VIZALITY_CLEAR_CACHE", clearCache);
   ipcMain.handle("VIZALITY_GET_PRELOAD", getPreload);
+  ipcMain.handle('VIZALITY_OPEN_DEVTOOLS', DevToolsOpen);
+  ipcMain.handle('VIZALITY_CLOSE_DEVTOOLS', DevToolsClose);
 }

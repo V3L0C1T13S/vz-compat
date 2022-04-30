@@ -64,11 +64,7 @@ export default class vzCompat extends RikkaPlugin {
                 }
             });
 
-            /**
-             * Now we can register the vizality:// file protocol to be able to conveniently
-             * link to local files from within Discord.
-             */
-            electron.protocol.registerFileProtocol('vizality', (request, callback) => {
+            const vzProtocolHandler = (request: any, callback: any) => {
                 /**
                  * Seems to be a security thing to limit users from accessing things they shouldn't be.
                  * We're splitting by ? because protocol file URLs can't seem to deal with queries.
@@ -91,7 +87,35 @@ export default class vzCompat extends RikkaPlugin {
                 } else if (type === 'builtins') {
                     return callback({ path: join(this.vzPath, 'renderer', 'src', 'builtins', path ?? "") });
                 }
-            });
+            }
+            /**
+             * Now we can register the vizality:// file protocol to be able to conveniently
+             * link to local files from within Discord.
+             */
+            electron.protocol.registerFileProtocol('vizality', vzProtocolHandler);
+            /** Compatibility with older plugins */
+            const registerProtocol = (name: string) => {
+                electron.protocol.registerFileProtocol(name, (request, cb) => {
+                    // https://security.stackexchange.com/a/123723
+                    const [url] = normalize(request.url.replace(`${name}://`, '')).replace(/^(\.\.(\/|\\|$))+/, '').split('?');
+
+                    switch (name) {
+                        case 'vz-asset':
+                            return cb({ path: join(this.vzPath, 'assets', url!) });
+                        case 'vz-builtin':
+                            return cb({ path: join(this.vzPath, 'core', 'builtins', url!) });
+                        case 'vz-theme':
+                            return cb({ path: join(this.vzPath, 'addons', 'themes', url!) });
+                        case 'vz-plugin':
+                            return cb({ path: join(this.vzPath, 'addons', 'plugins', url!) });
+                    }
+                });
+            };
+
+            registerProtocol('vz-asset');
+            registerProtocol('vz-builtin');
+            registerProtocol('vz-theme');
+            registerProtocol('vz-plugin');
         });
 
         addIPCHandles();
