@@ -3,22 +3,14 @@ import RikkaPlugin from "@rikka/Common/entities/Plugin";
 import { exec } from "child_process";
 import { copyFileSync, existsSync, mkdirSync, symlinkSync } from "fs";
 import { join, normalize, sep } from "path";
-import pkg from "./package.json";
 import { registerURLCallback } from "@rikka/modules/browserWindowtils";
-import electron from "electron";
+import electron, { ipcRenderer } from "electron";
 import { vzStore } from "./vzStore";
 import { addIPCHandles } from "./ipc";
+import { IPC_Consts } from "@rikka/API/Constants";
+import manifest from "./manifest.json";
 
 export default class vzCompat extends RikkaPlugin {
-    Manifest = {
-        name: pkg.name,
-        description: pkg.description,
-        author: pkg.author,
-        version: pkg.version,
-        license: pkg.license,
-        dependencies: pkg.dependencies,
-    }
-
     private vzPath: string;
 
     constructor() {
@@ -184,6 +176,7 @@ export default class vzCompat extends RikkaPlugin {
 
     inject() {
         this.createVzDirectories();
+        ipcRenderer.sendSync(IPC_Consts.ADD_HEADER_HOOK, "")
         require(join(this.vzPath, "injector", "preload.js"));
     }
 }
