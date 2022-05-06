@@ -7,12 +7,8 @@ import { registerURLCallback } from "@rikka/modules/browserWindowtils";
 import electron, { ipcRenderer } from "electron";
 import { vzStore } from "./vzStore";
 import { addIPCHandles } from "./ipc";
-import { IPC_Consts } from "@rikka/API/Constants";
 import manifest from "./manifest.json";
-import Rikka from "@rikka/index";
 import StyleManager from "@rikka/managers/StyleManager";
-
-declare const rikka: Rikka;
 
 export default class vzCompat extends RikkaPlugin {
     private vzPath: string;
