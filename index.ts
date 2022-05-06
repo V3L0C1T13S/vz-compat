@@ -9,6 +9,10 @@ import { vzStore } from "./vzStore";
 import { addIPCHandles } from "./ipc";
 import { IPC_Consts } from "@rikka/API/Constants";
 import manifest from "./manifest.json";
+import Rikka from "@rikka/index";
+import StyleManager from "@rikka/managers/StyleManager";
+
+declare const rikka: Rikka;
 
 export default class vzCompat extends RikkaPlugin {
     private vzPath: string;
@@ -140,7 +144,6 @@ export default class vzCompat extends RikkaPlugin {
     private createVzDirectories() {
         const directories = [
             join("addons", "plugins"),
-            join("addons", "themes"),
             "settings",
             "renderer",
         ];
@@ -150,10 +153,12 @@ export default class vzCompat extends RikkaPlugin {
             target: string
         }
 
+        /** Symlinking for tighter integration with Rikka */
         const symLinks: symlink[] = [
             {
-                source: join(this.vzPath, "renderer", "src"),
-                target: join(this.vzPath, "renderer"),
+                //@ts-ignore we know its private but honestly dont care
+                source: StyleManager.themesDirectory,
+                target: join(this.vzPath, "addons", "themes")
             }
         ];
 
@@ -167,7 +172,7 @@ export default class vzCompat extends RikkaPlugin {
         symLinks.forEach(link => {
             if (!existsSync(link.target)) {
                 Logger.log(`Creating symlink ${link.target}`);
-                //symlinkSync(link.source, link.target);
+                symlinkSync(link.source, link.target);
             }
         });
 
@@ -176,7 +181,6 @@ export default class vzCompat extends RikkaPlugin {
 
     inject() {
         this.createVzDirectories();
-        ipcRenderer.sendSync(IPC_Consts.ADD_HEADER_HOOK, "")
         require(join(this.vzPath, "injector", "preload.js"));
     }
 }
