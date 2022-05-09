@@ -20,26 +20,26 @@ function getPreload() {
 
 function compileSass(_: any, file: string) {
   return new Promise((res, reject) => {
-    readFile(file, 'utf8').then((rawScss) => {
+    readFile(file, "utf8").then((rawScss) => {
       try {
-        const relativePath = relative(file, join(vzStore.workingDirectory, 'vizality', 'renderer', 'src', 'styles', 'utils'));
+        const relativePath = relative(file, join(vzStore.workingDirectory, "vizality", "renderer", "src", "styles", "utils"));
         const absolutePath = resolve(join(file, relativePath));
-        const fixedScss = rawScss.replace('@vizality', absolutePath.split(sep).join(posix.sep));
+        const fixedScss = rawScss.replace("@vizality", absolutePath.split(sep).join(posix.sep));
         const result = renderSync({
           data: fixedScss,
           importer: (url: string, prev: string) => {
-            if (url === '@vizality') {
-              url = url.replace('@vizality', absolutePath.split(sep).join(posix.sep));
+            if (url === "@vizality") {
+              url = url.replace("@vizality", absolutePath.split(sep).join(posix.sep));
             }
-            url = url.replace('file:///', '');
+            url = url.replace("file:///", "");
             if (existsSync(url)) {
               return {
                 file: url,
               };
             }
-            const prevFile = prev === 'stdin'
+            const prevFile = prev === "stdin"
               ? file
-              : prev.replace(/https?:\/\/(?:[a-z]+\.)?discord(?:app)?\.com/i, '');
+              : prev.replace(/https?:\/\/(?:[a-z]+\.)?discord(?:app)?\.com/i, "");
             return {
               file: join(dirname(decodeURI(prevFile)), url).split(sep).join(posix.sep),
             };
@@ -67,6 +67,6 @@ export function addIPCHandles() {
   ipcMain.handle("VIZALITY_GET_HISTORY", getHistory);
   ipcMain.handle("VIZALITY_CLEAR_CACHE", clearCache);
   ipcMain.handle("VIZALITY_GET_PRELOAD", getPreload);
-  ipcMain.handle('VIZALITY_OPEN_DEVTOOLS', DevToolsOpen);
-  ipcMain.handle('VIZALITY_CLOSE_DEVTOOLS', DevToolsClose);
+  ipcMain.handle("VIZALITY_OPEN_DEVTOOLS", DevToolsOpen);
+  ipcMain.handle("VIZALITY_CLOSE_DEVTOOLS", DevToolsClose);
 }
