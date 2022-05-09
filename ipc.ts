@@ -3,7 +3,9 @@ import { clearCache, DevToolsClose, DevToolsOpen } from "@rikka/modules/util";
 import { BrowserWindow, ipcMain } from "electron";
 import { existsSync } from "fs";
 import { readFile } from "fs/promises";
-import { dirname, join, posix, relative, resolve, sep } from "path";
+import {
+  dirname, join, posix, relative, resolve, sep,
+} from "path";
 import { renderSync } from "sass";
 import { vizalityPath } from "./constants/vz";
 import { vzStore } from "./vzStore";
@@ -18,7 +20,7 @@ function getPreload() {
 
 function compileSass(_: any, file: string) {
   return new Promise((res, reject) => {
-    readFile(file, 'utf8').then(rawScss => {
+    readFile(file, 'utf8').then((rawScss) => {
       try {
         const relativePath = relative(file, join(vzStore.workingDirectory, 'vizality', 'renderer', 'src', 'styles', 'utils'));
         const absolutePath = resolve(join(file, relativePath));
@@ -32,17 +34,16 @@ function compileSass(_: any, file: string) {
             url = url.replace('file:///', '');
             if (existsSync(url)) {
               return {
-                file: url
+                file: url,
               };
             }
-            const prevFile =
-              prev === 'stdin'
-                ? file
-                : prev.replace(/https?:\/\/(?:[a-z]+\.)?discord(?:app)?\.com/i, '');
+            const prevFile = prev === 'stdin'
+              ? file
+              : prev.replace(/https?:\/\/(?:[a-z]+\.)?discord(?:app)?\.com/i, '');
             return {
-              file: join(dirname(decodeURI(prevFile)), url).split(sep).join(posix.sep)
+              file: join(dirname(decodeURI(prevFile)), url).split(sep).join(posix.sep),
             };
-          }
+          },
         });
         if (result) {
           return res(result.css.toString());
@@ -54,14 +55,15 @@ function compileSass(_: any, file: string) {
   });
 }
 
+// eslint-disable-next-line import/prefer-default-export
 export function addIPCHandles() {
-  if(!ipcMain) {
+  if (!ipcMain) {
     Logger.warn("IPC Main not available, skipping IPC handles");
     throw new Error("Don't fucking call this outside of the main process");
   }
 
   ipcMain.handle("VIZALITY_COMPILE_SASS", compileSass);
-  ipcMain.handle("VIZALITY_WINDOW_IS_MAXIMIZED", e => BrowserWindow.fromWebContents(e.sender)?.isMaximized());
+  ipcMain.handle("VIZALITY_WINDOW_IS_MAXIMIZED", (e) => BrowserWindow.fromWebContents(e.sender)?.isMaximized());
   ipcMain.handle("VIZALITY_GET_HISTORY", getHistory);
   ipcMain.handle("VIZALITY_CLEAR_CACHE", clearCache);
   ipcMain.handle("VIZALITY_GET_PRELOAD", getPreload);
