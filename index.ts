@@ -1,4 +1,3 @@
-import { Logger } from "@rikka/API/Utils";
 import RikkaPlugin from "@rikka/Common/entities/Plugin";
 import { exec } from "child_process";
 import {
@@ -49,8 +48,8 @@ export default class vzCompat extends RikkaPlugin {
       electron.session.defaultSession.webRequest.onBeforeRequest((details, done) => {
         if (urlRegex.test(details.url)) {
           /**
-                     * It should get restored to the Vizality URL later.
-                     */
+          * It should get restored to the Vizality URL later.
+          */
           // @ts-ignore
           done({ redirectURL: `${details.url.match(urlRegex)[1]}/app` });
         } else {
@@ -58,7 +57,7 @@ export default class vzCompat extends RikkaPlugin {
         }
       });
 
-      const vzProtocolHandler = (request: any, callback: any) => {
+      const vzProtocolHandler = (request: any, callback: Function) => {
         /**
                  * Seems to be a security thing to limit users from accessing things they shouldn't be.
                  * We're splitting by ? because protocol file URLs can't seem to deal with queries.
@@ -83,9 +82,9 @@ export default class vzCompat extends RikkaPlugin {
         }
       };
       /**
-             * Now we can register the vizality:// file protocol to be able to conveniently
-             * link to local files from within Discord.
-             */
+      * Now we can register the vizality:// file protocol to be able to conveniently
+      * link to local files from within Discord.
+      */
       electron.protocol.registerFileProtocol("vizality", vzProtocolHandler);
       /** Compatibility with older plugins */
       const registerProtocol = (name: string) => {
@@ -103,7 +102,7 @@ export default class vzCompat extends RikkaPlugin {
             case "vz-plugin":
               return cb({ path: join(this.vzPath, "addons", "plugins", url!) });
             default:
-              Logger.log(`Unimplemented protocol ${name}`);
+              this.log(`Unimplemented protocol ${name}`);
           }
         });
       };
@@ -120,23 +119,16 @@ export default class vzCompat extends RikkaPlugin {
   private downloadVizality() {
     if (existsSync(this.vzPath)) return;
 
-    // Try to get cache from cache store
-    /* if (existsSync(join(this.cacheStore.workingDirectory, "vizality"))) {
-            copy(join(this.cacheStore.workingDirectory, "vizality"), this.vzPath);
-            return;
-        } */
-
-    Logger.log("Downloading Vizality...");
+    this.log("Downloading Vizality...");
 
     // We need to clone & install vizality to our project, done at runtime to skip compile conflicts
     exec(`git clone https://github.com/vizality/vizality ${this.vzPath}`).on("close", () => {
       // Overwriting preloader.js so we dont conflict with rikka's preloader
       copyFileSync(join(__dirname, "preload.js"), join(this.vzPath, "injector", "preload.js"));
 
-      Logger.log("Vizality downloaded! Getting dependencies...");
+      this.log("Vizality downloaded! Getting dependencies...");
       exec(`cd ${this.vzPath} && npm install`).on("close", async () => {
-        Logger.log("Vizality dependencies installed!");
-        // this.cacheStore.copyDirectory(this.vzPath, "vizality");
+        this.log("Vizality dependencies installed!");
       });
     });
   }
@@ -148,35 +140,35 @@ export default class vzCompat extends RikkaPlugin {
       "renderer",
     ];
 
-        type symlink = {
-            source: string,
-            target: string
-        }
+    type symlink = {
+        source: string,
+        target: string
+    }
 
-        /** Symlinking for tighter integration with Rikka */
-        const symLinks: symlink[] = [
-          {
-            // @ts-ignore we know its private but honestly dont care
-            source: StyleManager.themesDirectory,
-            target: join(this.vzPath, "addons", "themes"),
-          },
-        ];
+    /** Symlinking for tighter integration with Rikka */
+    const symLinks: symlink[] = [
+      {
+        // @ts-ignore we know its private but honestly dont care
+        source: StyleManager.themesDirectory,
+        target: join(this.vzPath, "addons", "themes"),
+      },
+    ];
 
-        directories.forEach((dir) => {
-          if (!existsSync(dir)) {
-            Logger.log(`Creating ${dir}`);
-            mkdirSync(join(this.vzPath, dir), { recursive: true });
-          }
-        });
+    directories.forEach((dir) => {
+      if (!existsSync(dir)) {
+        this.log(`Creating ${dir}`);
+        mkdirSync(join(this.vzPath, dir), { recursive: true });
+      }
+    });
 
-        symLinks.forEach((link) => {
-          if (!existsSync(link.target)) {
-            Logger.log(`Creating symlink ${link.target}`);
-            symlinkSync(link.source, link.target);
-          }
-        });
+    symLinks.forEach((link) => {
+      if (!existsSync(link.target)) {
+        this.log(`Creating symlink ${link.target}`);
+        symlinkSync(link.source, link.target);
+      }
+    });
 
-        copyFileSync(join(__dirname, "preload.js"), join(this.vzPath, "injector", "preload.js"));
+    copyFileSync(join(__dirname, "preload.js"), join(this.vzPath, "injector", "preload.js"));
   }
 
   inject() {
