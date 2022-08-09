@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/prefer-default-export
 export function createProxy(t: any, props: any) {
   return new Proxy(t, {
     get: (target, prop, receiver) => {

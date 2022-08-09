@@ -7,9 +7,9 @@ import { join, normalize, sep } from "path";
 import { registerURLCallback } from "@rikka/modules/browserWindowtils";
 import electron from "electron";
 import StyleManager from "@rikka/managers/StyleManager";
-import { vzStore } from "./vzStore";
 import { addIPCHandles } from "./ipc";
 import manifest from "./manifest.json";
+import { vizalityPath } from "./constants";
 
 export default class vzCompat extends RikkaPlugin {
   private vzPath: string;
@@ -17,7 +17,7 @@ export default class vzCompat extends RikkaPlugin {
   constructor() {
     super();
 
-    this.vzPath = join(vzStore.workingDirectory, "vizality");
+    this.vzPath = vizalityPath;
   }
 
   preInject() {
